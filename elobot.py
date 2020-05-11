@@ -63,6 +63,7 @@ async def on_message(message: discord.Message):
         # read arguments
         args = message.content.split(' ', 1)
 
+
         if args[0] == myenv.DISCORD_TRIGGER:
 
             if args.__len__() == 2:
