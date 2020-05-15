@@ -1,14 +1,12 @@
 #!/usr/bin/python3.6
 
 # IMPORTS
-# import io
-# import json
 import discord
 from aoe2netAPI import Aoe2netAPI
 import sys
 import logging
 # import pdb
-import myenv
+import config
 
 from requests import Response
 
@@ -26,10 +24,10 @@ client = discord.Client()
 logformat = '%(asctime)-19s %(name)s %(lineno)-3s %(levelname)-8s: %(message)s'
 logfilename = 'elobot.log'
 
-if len(sys.argv) > 1 and sys.argv[1] in ['-d', '--debug'] or myenv.LOGLEVEL == 'debug':
+if len(sys.argv) > 1 and sys.argv[1] in ['-d', '--debug'] or config.LOGLEVEL == 'debug':
     logging.basicConfig(format=logformat, level=logging.DEBUG)
 
-elif len(sys.argv) > 1 and sys.argv[1] in ['-i', '--info'] or myenv.LOGLEVEL == 'info':
+elif len(sys.argv) > 1 and sys.argv[1] in ['-i', '--info'] or config.LOGLEVEL == 'info':
     logging.basicConfig(filename=logfilename, format=logformat, level=logging.INFO)
 
 else:
@@ -52,7 +50,7 @@ async def on_message(message: discord.Message):
         return
     # author.bot verhindern
 
-    if message.content.startswith(myenv.DISCORD_TRIGGER):
+    if message.content.startswith(config.DISCORD_TRIGGER):
         # print('message.channel object: ', message.channel)
 
         # todo: implement logging to file
@@ -69,7 +67,7 @@ async def on_message(message: discord.Message):
         args = message.content.split(' ', 1)
 
 
-        if args[0] == myenv.DISCORD_TRIGGER:
+        if args[0] == config.DISCORD_TRIGGER:
 
             if args.__len__() == 2:
                 if args[1] == '-about':
@@ -82,13 +80,13 @@ async def on_message(message: discord.Message):
                                                F"**Author's Discord:** https://discord.gg/9eCZW4j_ \n"
                                                F"**Steamcommunity group** "
                                                F"https://steamcommunity.com/groups/elostatsbot/announcements/ \n\n"
-                                               F"**Usage:** \n`{myenv.DISCORD_TRIGGER} "
+                                               F"**Usage:** \n`{config.DISCORD_TRIGGER} "
                                                F"[<search string> | -help | -invite | -about ]`")
                     return
 
                 elif args[1] == '-help':
                     await message.channel.send(F"<@{message.author.id}> \n"
-                                               F"`{myenv.DISCORD_TRIGGER} "
+                                               F"`{config.DISCORD_TRIGGER} "
                                                F"[<search string> | -help | -invite | -about ]`")
                     return
                 elif args[1] == '-invite':
@@ -145,7 +143,7 @@ async def on_message(message: discord.Message):
                     await message.channel.send(F"<@{message.author.id}> "
                                                F'Sorry, there was no result for *{search}*.')
 
-client.run(myenv.DISCORD_TOKEN)
+client.run(config.DISCORD_TOKEN)
 
 
 
