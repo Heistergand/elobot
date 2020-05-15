@@ -1,4 +1,4 @@
-# .env
+# config.py
 
 # Remember: 
 # Do not make this file public, after you have set your secret values.
