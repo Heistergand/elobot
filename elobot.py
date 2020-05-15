@@ -23,18 +23,23 @@ client = discord.Client()
 
 # LOGGING
 
+logformat = '%(asctime)-19s %(name)s %(lineno)-3s %(levelname)-8s: %(message)s'
+logfilename = 'elobot.log'
+
 if len(sys.argv) > 1 and sys.argv[1] in ['-d', '--debug'] or myenv.LOGLEVEL == 'debug':
-    logging.basicConfig(format='%(asctime)-19s %(name)s %(lineno)-3s %(levelname)-8s: %(message)s', level=logging.DEBUG)
+    logging.basicConfig(format=logformat, level=logging.DEBUG)
+
 elif len(sys.argv) > 1 and sys.argv[1] in ['-i', '--info'] or myenv.LOGLEVEL == 'info':
-    logging.basicConfig(format='%(asctime)-19s %(name)s %(lineno)-3s %(levelname)-8s: %(message)s', level=logging.INFO)
+    logging.basicConfig(filename=logfilename, format=logformat, level=logging.INFO)
+
 else:
-    logging.basicConfig(format='%(asctime)-19s %(name)s %(lineno)-3s %(levelname)-8s: %(message)s', level=logging.WARN)
+    logging.basicConfig(filename=logfilename, format=logformat, level=logging.WARN)
 
 log = logging.getLogger(__name__)
 logging.getLogger('discord.gateway').setLevel(logging.WARNING)
 logging.getLogger('discord.client').setLevel(logging.WARNING)
 logging.getLogger('websockets.protocol').setLevel(logging.WARN)
-
+log.debug('Log Level is DEBUG, therefore writing all log to standard output (and not to logfile).')
 
 @client.event
 async def on_ready():
@@ -69,7 +74,7 @@ async def on_message(message: discord.Message):
             if args.__len__() == 2:
                 if args[1] == '-about':
                     await message.channel.send(F"Hi, <@{message.author.id}>, I am the EloBot. "
-                                               F"I'm using the ao2.net API to query the "
+                                               F"I'm using the aoe2.net API to query the "
                                                F"*Age of Empires II DE* leaderboard.\n\n"
                                                F"**aoe2net Website** https://aoe2.net "
                                                F"*(This bot is not affiliated with aoe2net, it just uses the "
