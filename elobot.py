@@ -71,14 +71,21 @@ log.debug('Log Level is DEBUG, therefore writing all log to standard output (and
 
 @client.event
 async def on_ready():
+    await client.change_presence(status=discord.Status.idle,
+                                 activity=discord.Game(F'Usage: {config.DISCORD_TRIGGER} -help'))
     log.info(f'We have logged in as {client.user}')
 
 
 @client.event
 async def on_message(message: discord.Message):
+
+    # dear bot, do not listen to yourself, this would be awkward
     if message.author == client.user:
         return
-    # author.bot verhindern
+
+    # deny author.bot (bot's should not be able to talk to each other to prevent endless loops)
+    if message.author.bot:
+        return
 
     if message.content.startswith(config.DISCORD_TRIGGER):
         # print('message.channel object: ', message.channel)
