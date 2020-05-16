@@ -13,3 +13,8 @@ https://discord.com/api/oauth2/authorize?client_id=707630937252298864&permission
 
 
 gl hf, Heistergand
+
+# Prerequisites
+You need to install the following python modules:
+- **discord** *by Rapptz*
+- **timeago** *by hustcc*
