@@ -24,14 +24,20 @@
 
 
 # IMPORTS
-import discord
 from aoe2netAPI import Aoe2netAPI
 import sys
 import logging
-# import pdb
+from datetime import datetime
+from requests import Response
+
+# this is the config.py file. You have to edit it to set your secret discord token
 import config
 
-from requests import Response
+# third party modules
+import discord
+import timeago
+
+
 
 python_requires = '>=3.5'
 
@@ -62,6 +68,7 @@ logging.getLogger('discord.client').setLevel(logging.WARNING)
 logging.getLogger('websockets.protocol').setLevel(logging.WARN)
 log.debug('Log Level is DEBUG, therefore writing all log to standard output (and not to logfile).')
 
+
 @client.event
 async def on_ready():
     log.info(f'We have logged in as {client.user}')
@@ -89,9 +96,7 @@ async def on_message(message: discord.Message):
         # read arguments
         args = message.content.split(' ', 1)
 
-
         if args[0] == config.DISCORD_TRIGGER:
-
             if args.__len__() == 2:
                 if args[1] == '-about':
                     await message.channel.send(F"Hi, <@{message.author.id}>, I am the EloBot. "
@@ -140,31 +145,52 @@ async def on_message(message: discord.Message):
                 search = args[1]
 
             # Query the leaderboard API
-            leaderboard: Response = api.leaderboard(search=search)
+            try:
+                api_response: Response = api.leaderboard(search=search, count=20)
+            except:
+                log.error('Internal error while trying to fetch data from ae2.net API')
+                await message.channel.send(F"*<@{message.author.id}> "
+                                           F'An error occured while trying to query the API. Please try again later.*')
+                return
 
-            if not leaderboard.ok:
-                await message.channel.send(F"<@{message.author.id}> "
+            if not api_response.ok:
+                await message.channel.send(F"*<@{message.author.id}> "
                                            F'An error occured while trying to query the API. Please try again later. '
-                                           F'**(It''s not your fault.)**')
-                log.warning(f'API Response was not OK. {leaderboard}')
+                                           F'(It''s not your fault.)*')
+                log.warning(f'API Response was not OK. {api_response}')
             else:
-                result = leaderboard.json()
+                result = api_response.json()
 
-                # pdb.set_trace()
-                if result["count"] == 1:
-                    name = result["leaderboard"][0]["name"]
-                    rank = result["leaderboard"][0]["rank"]
-                    rating = result["leaderboard"][0]["rating"]
-                    # total = result["total"]
-
-                    await message.channel.send(F"<@{message.author.id}> \n"
-                                               F'***Age of Empires II DE Leaderboard***\n'
-                                               F'**Name:** {name}, '
-                                               F'**Rank:** {rank}, '
-                                               F'**Rating:** {rating}')
-                else:
+                count = result["count"]
+                if count == 0:
                     await message.channel.send(F"<@{message.author.id}> "
-                                               F'Sorry, there was no result for *{search}*.')
+                                               F"Sorry, there was no result for *{search}*.")
+                else:
+                    message_text = F"<@{message.author.id}> \n***"\
+                        F"Age of Empires II DE Leaderboard*** returned **{count}** "
+
+                    message_text += F"result{'s' if count > 1 else ''}: "
+
+                    for leaderboard in sorted(result["leaderboard"],
+                                              key=lambda item: item["last_match_time"],
+                                              reverse=True):
+                        name = leaderboard["name"]
+                        rank = leaderboard["rank"]
+                        rating = leaderboard["rating"]
+                        last_match_time = int(leaderboard["last_match_time"])
+                        # last_match_time_str =
+                        # datetime.utcfromtimestamp(last_match_time).strftime('%Y-%m-%d %H:%M:%S UTC')
+                        last_seen = timeago.format(datetime.utcfromtimestamp(last_match_time),
+                                                   datetime.utcnow(),
+                                                   locale='en_EN')
+                        # total = result["total"]
+                        message_text += F'\n**{name}** '\
+                            F'#{rank}, '\
+                            F'Rating: **{rating}**, '\
+                            F'Last match: **{last_seen}**'
+
+                    await message.channel.send(message_text)
+
 
 client.run(config.DISCORD_TOKEN)
 
