@@ -99,16 +99,19 @@ async def on_message(message: discord.Message):
         if args[0] == config.DISCORD_TRIGGER:
             if args.__len__() == 2:
                 if args[1] == '-about':
-                    await message.channel.send(F"Hi, <@{message.author.id}>, I am the EloBot. "
+                    await message.channel.send(F"\nHi <@{message.author.id}>, \nI am the EloBot. "
                                                F"I'm using the aoe2.net API to query the "
-                                               F"*Age of Empires II DE* leaderboard.\n\n"
-                                               F"**aoe2net Website** https://aoe2.net "
+                                               F"*Age of Empires II DE* leaderboard and show the ranking and "
+                                               F"rating of the players we found.\n\n"
+                                               F"**aoe2net Website** \nhttps://aoe2.net\n"
                                                F"*(This bot is not affiliated with aoe2net, it just uses the "
-                                               F"open API they provide)* \n"
-                                               F"**Author's Discord:** https://discord.gg/9eCZW4j_ \n"
-                                               F"**Steamcommunity group** "
-                                               F"https://steamcommunity.com/groups/elostatsbot/announcements/ \n\n"
-                                               F"**Usage:** \n`{config.DISCORD_TRIGGER} "
+                                               F"open API they provide)* \n\n"
+                                               F"**Bot's author's Discord** \nhttps://discord.gg/9eCZW4j_ \n\n"
+                                               F"**Steamcommunity group** \n"
+                                               F"https://steamcommunity.com/groups/elostatsbot/ \n\n"
+                                               F"**Github Project**\n"
+                                               F"https://github.com/Heistergand/elobot \n\n"
+                                               F"**Usage** \n`{config.DISCORD_TRIGGER} "
                                                F"[<search string> | -help | -invite | -about ]`")
                     return
 
