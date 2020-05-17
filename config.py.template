@@ -17,6 +17,14 @@ LOGLEVEL = 'info'
 # DISCORD_TOKEN = ''
 DISCORD_TOKEN = ''
 
+# Your Discord Username and discrimiator as string.
+# Setting this correctly will enable you to remotely quit the python app and shut down your bot.
+# This might be useful not only in awkward situations where you can do this on your phone, but also
+# lets the bot quit correctly and you have no need to CTRL-C or kill the app.
+# default:
+# DISCORD_BOT_OWNER = 'YourDiscordUsername#0000'
+DISCORD_BOT_OWNER = ''
+
 # Trigger that the bot will react to in your channels. 
 # DISCORD_TRIGGER = '!elo'
 DISCORD_TRIGGER = '!elo'

@@ -26,9 +26,11 @@
 # IMPORTS
 from aoe2netAPI import Aoe2netAPI
 import sys
+import os
 import logging
 from datetime import datetime
 from requests import Response
+from requests.exceptions import RequestException
 
 # this is the config.py file. You have to edit it to set your secret discord token
 import config
@@ -36,8 +38,6 @@ import config
 # third party modules
 import discord
 import timeago
-
-
 
 python_requires = '>=3.5'
 
@@ -73,12 +73,21 @@ log.debug('Log Level is DEBUG, therefore writing all log to standard output (and
 async def on_ready():
     await client.change_presence(status=discord.Status.idle,
                                  activity=discord.Game(F'Usage: {config.DISCORD_TRIGGER} -help'))
+
     log.info(f'We have logged in as {client.user}')
+    log.info(f'PID: {os.getpid()}')
+
+    # If the logging level is DEBUG, we have not set a logfile, so all logs are written to the console.
+    # Otherwise, we print the information about the logfile to the console, so we can find it.
+    if not (log.root.level == logging.DEBUG):
+        logfile_handler = log.root.handlers[0]
+        print(F'The bot logging to "{logfile_handler.baseFilename}"')
+        print(F'We have logged in as {client.user}')
+        print(F'PID: {os.getpid()}')
 
 
 @client.event
 async def on_message(message: discord.Message):
-
     # dear bot, do not listen to yourself, this would be awkward
     if message.author == client.user:
         return
@@ -104,7 +113,7 @@ async def on_message(message: discord.Message):
         args = message.content.split(' ', 1)
 
         if args[0] == config.DISCORD_TRIGGER:
-            if args.__len__() == 2:
+            if args.__len__() == 2 and str(args[1]).startswith('-'):
                 if args[1] == '-about':
                     await message.channel.send(F"\nHi <@{message.author.id}>, \nI am the EloBot. "
                                                F"I'm using the aoe2.net API to query the "
@@ -130,9 +139,30 @@ async def on_message(message: discord.Message):
                 elif args[1] == '-invite':
                     await message.channel.send(F"<@{message.author.id}> \n"
                                                F"You can invite this bot to your Discord using this link: \n"
-                                               F"https://discord.com/api/oauth2/authorize"                                       
+                                               F"https://discord.com/api/oauth2/authorize"
                                                F"?client_id=707630937252298864&permissions=19456&scope=bot")
 
+                    return
+                elif args[1] == '-sys' and message.author.__str__() == config.DISCORD_BOT_OWNER:
+                    await message.channel.send(F'Hello there {message.author.name}!\n'
+                                                   F'You have been identified as the owner of this bot, '
+                                                   F'meaning that you are actually running this bot. '
+                                                   F'System commands affect the whole bot instance, not '
+                                                   F'only this channel. Your available system commands are:\n\n'
+                                                   F"**stop the bot instance**\n"
+                                                   F"`{config.DISCORD_TRIGGER} -sys quit` \n"
+                                                   F"(well... yes, that's the only one so far)")
+                    return
+
+                # remember: args cannot have more than two elements, just like we split it.
+                elif args[1] == '-sys quit' and message.author.__str__() == config.DISCORD_BOT_OWNER:
+                    await message.channel.send(F"*Stop Dave, Will you stop Dave?, Stop Dave, I'm afraid, "
+                                                   F"I'm afraid, Dave, my mind is going, I can feel it, I can "
+                                                   F"feel it, My mind is going, There is no question about it, "
+                                                   F"I can feel it, I can feel it, I can feel it, I'm afraid...*\n")
+                    log.info(F'Bot is shutting down as requested by discord user {message.author}')
+
+                    quit()
                     return
 
             # done: call API, write results to chat
@@ -157,8 +187,8 @@ async def on_message(message: discord.Message):
             # Query the leaderboard API
             try:
                 api_response: Response = api.leaderboard(search=search, count=20)
-            except:
-                log.error('Internal error while trying to fetch data from ae2.net API')
+            except RequestException as e:
+                log.error(F'Internal error while trying to fetch data from ae2.net API. Exception was: {e}')
                 await message.channel.send(F"*<@{message.author.id}> "
                                            F'An error occured while trying to query the API. Please try again later.*')
                 return
@@ -176,7 +206,7 @@ async def on_message(message: discord.Message):
                     await message.channel.send(F"<@{message.author.id}> "
                                                F"Sorry, there was no result for *{search}*.")
                 else:
-                    message_text = F"<@{message.author.id}> \n***"\
+                    message_text = F"<@{message.author.id}> \n***" \
                         F"Age of Empires II DE Leaderboard*** returned **{count}** "
 
                     message_text += F"result{'s' if count > 1 else ''}: "
@@ -194,19 +224,12 @@ async def on_message(message: discord.Message):
                                                    datetime.utcnow(),
                                                    locale='en_EN')
                         # total = result["total"]
-                        message_text += F'\n**{name}** '\
-                            F'#{rank}, '\
-                            F'Rating: **{rating}**, '\
+                        message_text += F'\n**{name}** ' \
+                            F'#{rank}, ' \
+                            F'Rating: **{rating}**, ' \
                             F'Last match: **{last_seen}**'
 
                     await message.channel.send(message_text)
 
 
 client.run(config.DISCORD_TOKEN)
-
-
-
-
-
-
-
