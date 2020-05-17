@@ -71,7 +71,7 @@ log.debug('Log Level is DEBUG, therefore writing all log to standard output (and
 
 @client.event
 async def on_ready():
-    await client.change_presence(status=discord.Status.idle,
+    await client.change_presence(status=discord.Status.online,
                                  activity=discord.Game(F'Usage: {config.DISCORD_TRIGGER} -help'))
 
     log.info(f'We have logged in as {client.user}')
